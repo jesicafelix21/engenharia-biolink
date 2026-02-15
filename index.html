@@ -169,7 +169,7 @@ button { font-family: inherit; cursor: pointer; }
         <div class="card-content" style="position: relative; z-index: 3;">
            <h3 class="card-title" style="font-family: sans-serif, sans-serif; font-weight: 700; font-style: normal; font-size: 16px; text-decoration: none; text-transform: none; color: #FFFFFF;  white-space: pre-wrap; word-break: break-word; text-align: left;">Contato Personalizado</h3>
            <p class="card-desc" style="font-family: sans-serif, sans-serif; font-weight: 400; font-style: normal; font-size: 0.875rem; text-decoration: none; text-transform: none; color: #FFFFFF;  text-align: left;">Estou aqui para ajudar a encontrar as melhores soluções de engenharia para suas necessidades.</p>
-          
+          <a href="https://www.instagram.com/soujessicafelixx/" class="card-button" style="background-color: #6D28D9; color: #FFFFFF; border-radius: 8px; width: fit-content; max-width: 100%;  font-family: sans-serif, sans-serif; font-weight: 600; font-style: normal; font-size: 12px; text-decoration: none; text-transform: none; box-shadow: none;" target="_blank" rel="noopener noreferrer" data-tapio-key="527e3de1-21dd-422f-b4d0-acfc0760e5df" data-tapio-label="agendar" data-tapio-href="https://www.instagram.com/soujessicafelixx/">agendar</a>
         </div>
       </div>
       
@@ -189,7 +189,7 @@ button { font-family: inherit; cursor: pointer; }
         <div class="card-content" style="position: relative; z-index: 3;">
            <h3 class="card-title" style="font-family: sans-serif, sans-serif; font-weight: 700; font-style: normal; font-size: 16px; text-decoration: none; text-transform: none; color: #FFFFFF;  white-space: pre-wrap; word-break: break-word; text-align: left;">Conhecer serviços</h3>
            <p class="card-desc" style="font-family: sans-serif, sans-serif; font-weight: 400; font-style: normal; font-size: 0.875rem; text-decoration: none; text-transform: none; color: #FFFFFF;  text-align: left;">Descubra a lista completa de serviços de engenharia que oferecemos. Desde consultoria técnica até projetos completos.</p>
-          
+          <a href="https://www.instagram.com/soujessicafelixx/" class="card-button" style="background-color: #6D28D9; color: #FFFFFF; border-radius: 8px; width: fit-content; max-width: 100%;  font-family: sans-serif, sans-serif; font-weight: 600; font-style: normal; font-size: 12px; text-decoration: none; text-transform: none; box-shadow: none;" target="_blank" rel="noopener noreferrer" data-tapio-key="4b80c77f-137c-41da-b94b-4b955d106eca" data-tapio-label="visitar local" data-tapio-href="https://www.instagram.com/soujessicafelixx/">visitar local</a>
         </div>
       </div>
       
@@ -407,35 +407,32 @@ button { font-family: inherit; cursor: pointer; }
   (function(){
     'use strict';
     var EP='https://mlwywdyrvneqxvycmaba.supabase.co/functions/v1/track-event';
-    var AK='Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sd3l3ZHlydm5lcXh2eWNtYWJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzODY4MzAsImV4cCI6MjA4NDk2MjgzMH0.knjNJtv-1pg_4dHKKidtFNOB7tVHE3mt5Vb-eXqI334';
+    var AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sd3l3ZHlydm5lcXh2eWNtYWJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzODY4MzAsImV4cCI6MjA4NDk2MjgzMH0.knjNJtv-1pg_4dHKKidtFNOB7tVHE3mt5Vb-eXqI334';
     var pid=document.querySelector('meta[name="tapio-project-id"]');
     if(!pid)return;
     var P=pid.getAttribute('content');
     function send(t,k,l){
-      try{
-        var b=JSON.stringify({project_id:P,event_type:t,button_key:k||null,button_label:l||null,page_url:location.href.substring(0,200)});
-        if(navigator.sendBeacon){
-          navigator.sendBeacon(EP+'?apikey='+encodeURIComponent(AK.replace('Bearer ','')),new Blob([b],{type:'application/json'}));
-        } else {
-          fetch(EP,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AK,'apikey':AK.replace('Bearer ','')},body:b,keepalive:true}).catch(function(){});
-        }
-      }catch(e){}
+      var b=JSON.stringify({project_id:P,event_type:t,button_key:k||null,button_label:l||null,page_url:location.href.substring(0,200)});
+      fetch(EP,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+AK,'apikey':AK},body:b,keepalive:true}).then(function(r){
+        if(!r.ok) r.text().then(function(txt){console.warn('[Tapio] error',r.status,txt);});
+        else console.log('[Tapio] '+t+' sent',k||'',l||'');
+      }).catch(function(e){console.warn('[Tapio] network error',e);});
     }
-    // View (1 per session)
-    var vk='tp_v_'+P;
-    if(!sessionStorage.getItem(vk)){
-      sessionStorage.setItem(vk,'1');
+    // View com throttle 30min via localStorage
+    var vk='tapio_view_last_'+P;
+    var last=parseInt(localStorage.getItem(vk)||'0',10);
+    if(Date.now()-last>1800000){
+      localStorage.setItem(vk,''+Date.now());
       send('view');
     }
-    // Clicks
-    var c=document.querySelector('.container');
-    if(c) c.addEventListener('click',function(e){
-      var el=e.target.closest('a[href],button');
+    // Cliques com delegacao ampla
+    document.addEventListener('click',function(e){
+      var el=e.target.closest('a,button,[role="button"],[data-tapio-key]');
       if(!el)return;
-      var label=(el.textContent||'').trim().substring(0,100);
-      var key=el.id||label.toLowerCase().replace(/[^a-z0-9]+/g,'-').substring(0,60);
-      if(label) send('click',key,label);
-    });
+      var key=el.getAttribute('data-tapio-key')||el.id||'unknown';
+      var label=el.getAttribute('data-tapio-label')||(el.innerText||'').trim().substring(0,80)||'clique';
+      send('click',key,label);
+    },true);
   })();
   </script>
 </body>
